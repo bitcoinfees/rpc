@@ -164,6 +164,10 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if idx != -1 {
 		contentType = contentType[:idx]
 	}
+	// Let Content-Type default to application/json.
+	if contentType == "" {
+		contentType = "application/json"
+	}
 	codec := s.codecs[strings.ToLower(contentType)]
 	if codec == nil {
 		s.writeError(w, 415, "rpc: unrecognized Content-Type: "+contentType)
