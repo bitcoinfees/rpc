@@ -61,6 +61,20 @@ type Server struct {
 	afterFunc  func(i *RequestInfo)
 }
 
+// RegisterCustomNames allows the use of custom method names, instead of the
+// "Service.Method" names which are determined by reflection.
+//
+// The custom names are specified by a map from the new name to the existing
+// "Service.Method" name.
+func (s *Server) RegisterCustomNames(names map[string]string) {
+	if s.services.names == nil {
+		s.services.names = make(map[string]string)
+	}
+	for custom, existing := range names {
+		s.services.names[custom] = existing
+	}
+}
+
 // RegisterCodec adds a new codec to the server.
 //
 // Codecs are defined to process a given serialization scheme, e.g., JSON or

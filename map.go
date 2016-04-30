@@ -47,6 +47,7 @@ type serviceMethod struct {
 type serviceMap struct {
 	mutex    sync.Mutex
 	services map[string]*service
+	names    map[string]string
 }
 
 // register adds a new service using reflection to extract its methods.
@@ -88,7 +89,7 @@ func (m *serviceMap) register(rcvr interface{}, name string, passReq bool) error
 			continue
 		}
 		// Method needs four ins: receiver, *http.Request, *args, *reply.
-		if mtype.NumIn() != 3 + paramOffset {
+		if mtype.NumIn() != 3+paramOffset {
 			continue
 		}
 
@@ -143,6 +144,12 @@ func (m *serviceMap) register(rcvr interface{}, name string, passReq bool) error
 //
 // The method name uses a dotted notation as in "Service.Method".
 func (m *serviceMap) get(method string) (*service, *serviceMethod, error) {
+	// Check if method name exists in the custom name map.
+	if m.names != nil {
+		if mappedName, ok := m.names[method]; ok {
+			method = mappedName
+		}
+	}
 	parts := strings.Split(method, ".")
 	if len(parts) != 2 {
 		err := fmt.Errorf("rpc: service/method request ill-formed: %q", method)
